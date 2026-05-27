@@ -1,0 +1,174 @@
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║  DEVILSEC · zshrc · v1.1.0                                               ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+
+# ─── Environment ─────────────────────────────────────────────────────────────
+export EDITOR=nvim
+export VISUAL=nvim
+export PAGER=less
+export LESS='-R --use-color -Dd+r -Du+b'
+
+export DEVILSEC_HOME=/opt/devilsec
+case ":$PATH:" in
+    *":$DEVILSEC_HOME/bin:"*) ;;
+    *) export PATH="$DEVILSEC_HOME/bin:$PATH" ;;
+esac
+case ":$PATH:" in
+    *":$HOME/.local/bin:"*) ;;
+    *) export PATH="$HOME/.local/bin:$PATH" ;;
+esac
+
+# ─── History ─────────────────────────────────────────────────────────────────
+HISTFILE=~/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
+setopt HIST_IGNORE_DUPS HIST_IGNORE_SPACE HIST_REDUCE_BLANKS
+setopt SHARE_HISTORY APPEND_HISTORY INC_APPEND_HISTORY
+
+# ─── Behaviour ───────────────────────────────────────────────────────────────
+setopt AUTO_CD AUTO_PUSHD PUSHD_IGNORE_DUPS PUSHD_SILENT
+setopt EXTENDED_GLOB GLOB_DOTS NO_BEEP NOTIFY
+setopt INTERACTIVE_COMMENTS
+
+bindkey -e
+bindkey '^[[A' history-search-backward
+bindkey '^[[B' history-search-forward
+bindkey '^R' history-incremental-search-backward
+
+autoload -Uz compinit && compinit -d "$HOME/.zcompdump-$ZSH_VERSION"
+
+# ─── Plugins ─────────────────────────────────────────────────────────────────
+ZSH_PLUGIN_DIR="$HOME/.zsh-plugins"
+[[ -d "$ZSH_PLUGIN_DIR/zsh-completions/src" ]] && \
+    fpath=("$ZSH_PLUGIN_DIR/zsh-completions/src" $fpath)
+[[ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
+    source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+[[ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
+    source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+[[ -f "$ZSH_PLUGIN_DIR/fzf-tab/fzf-tab.plugin.zsh" ]] && \
+    source "$ZSH_PLUGIN_DIR/fzf-tab/fzf-tab.plugin.zsh"
+[[ -f "$ZSH_PLUGIN_DIR/zsh-history-substring-search/zsh-history-substring-search.zsh" ]] && \
+    source "$ZSH_PLUGIN_DIR/zsh-history-substring-search/zsh-history-substring-search.zsh"
+
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#807a90,italic"
+
+# fzf
+[[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] && source /usr/share/doc/fzf/examples/key-bindings.zsh
+[[ -f /usr/share/doc/fzf/examples/completion.zsh ]] && source /usr/share/doc/fzf/examples/completion.zsh
+export FZF_DEFAULT_OPTS=" \
+    --color=bg+:#16121C,bg:-1,spinner:#DC2641,hl:#8A2BE2 \
+    --color=fg:#E8E3F2,header:#8A2BE2,info:#807a90,pointer:#DC2641 \
+    --color=marker:#D4AF37,fg+:#E8E3F2,prompt:#DC2641,hl+:#8A2BE2 \
+    --color=border:#8A2BE2 \
+    --border=rounded \
+    --height=40% --layout=reverse"
+
+# zoxide
+if command -v zoxide &>/dev/null; then
+    eval "$(zoxide init zsh --cmd j)"
+fi
+
+# ─── bat / batcat compatibility (Kali names it batcat) ──────────────────────
+if command -v bat &>/dev/null; then
+    alias cat='bat --style=plain --paging=never'
+elif command -v batcat &>/dev/null; then
+    alias cat='batcat --style=plain --paging=never'
+    [[ ! -e "$HOME/.local/bin/bat" ]] && mkdir -p "$HOME/.local/bin" && \
+        ln -sf "$(command -v batcat)" "$HOME/.local/bin/bat"
+fi
+
+# ─── ls / lsd ───────────────────────────────────────────────────────────────
+if command -v lsd &>/dev/null; then
+    alias ls='lsd --group-directories-first'
+    alias ll='lsd -lh --group-directories-first'
+    alias la='lsd -lha --group-directories-first'
+    alias lt='lsd --tree --depth 2'
+else
+    alias ll='ls -lh --color=auto'
+    alias la='ls -lha --color=auto'
+fi
+
+# ─── DEVILSEC ───────────────────────────────────────────────────────────────
+alias arsenal='devilsec-arsenal'
+alias pivoting='devilsec-arsenal pivoting'
+alias adtools='devilsec-arsenal active-directory'
+alias kb='devilsec-keyboard'
+alias teclado='devilsec-keyboard'
+
+# ─── pentest helpers ────────────────────────────────────────────────────────
+alias myip='ip -4 addr show | grep -oP "(?<=inet\s)\d+(\.\d+){3}" | grep -v 127.0.0.1 | head -1'
+alias tunip='ip -4 addr show tun0 2>/dev/null | grep -oP "(?<=inet\s)\d+(\.\d+){3}"'
+alias pyserve='python3 -m http.server'
+alias urlencode='python3 -c "import sys,urllib.parse as u;print(u.quote_plus(sys.argv[1]))"'
+alias urldecode='python3 -c "import sys,urllib.parse as u;print(u.unquote_plus(sys.argv[1]))"'
+alias b64='base64 -w0'
+alias b64d='base64 -d'
+
+# git
+alias g='git'
+alias gst='git status -sb'
+alias gd='git diff'
+alias gl='git log --oneline --graph --decorate -20'
+alias gco='git checkout'
+alias gp='git pull'
+
+# common
+alias grep='grep --color=auto'
+alias diff='diff --color=auto'
+alias ip='ip --color=auto'
+alias mv='mv -i'
+alias cp='cp -i'
+alias rm='rm -I'
+alias mkdir='mkdir -p'
+alias df='df -h'
+alias du='du -h'
+alias free='free -h'
+alias ports='ss -tulnp'
+
+# ─── Functions ──────────────────────────────────────────────────────────────
+mkcd() { mkdir -p "$1" && cd "$1" || return 1; }
+
+extract() {
+    [[ -f "$1" ]] || { echo "extract: '$1' not found"; return 1; }
+    case "$1" in
+        *.tar.bz2|*.tbz2) tar xjf "$1" ;;
+        *.tar.gz|*.tgz)   tar xzf "$1" ;;
+        *.tar.xz|*.txz)   tar xJf "$1" ;;
+        *.tar.zst)        tar --zstd -xf "$1" ;;
+        *.tar)            tar xf "$1" ;;
+        *.bz2)            bunzip2 "$1" ;;
+        *.gz)             gunzip "$1" ;;
+        *.zip)            unzip "$1" ;;
+        *.rar)            unrar x "$1" ;;
+        *.7z)             7z x "$1" ;;
+        *.xz)             unxz "$1" ;;
+        *)                echo "extract: unknown format: '$1'"; return 1 ;;
+    esac
+}
+
+# ─── Greeter (ONLY the first terminal of the X session) ─────────────────────
+__devilsec_greeter() {
+    local marker="/tmp/devilsec-greeted-${DISPLAY:-na}-${USER}"
+    [[ $- == *i* && -t 1 ]] || return 0
+
+    # Compare marker against X session start time
+    if [[ -e "$marker" ]]; then
+        local xsession_start marker_time
+        xsession_start=$(stat -c %Y /tmp/.X*-lock 2>/dev/null | sort -n | head -1)
+        marker_time=$(stat -c %Y "$marker" 2>/dev/null)
+        if [[ -n "$xsession_start" && -n "$marker_time" ]] \
+           && (( marker_time >= xsession_start )); then
+            return 0
+        fi
+    fi
+
+    touch "$marker"
+    command -v fastfetch &>/dev/null && timeout 2 fastfetch 2>/dev/null || true
+}
+__devilsec_greeter
+unset -f __devilsec_greeter
+
+# ─── Prompt (starship) ──────────────────────────────────────────────────────
+if command -v starship &>/dev/null; then
+    eval "$(starship init zsh)"
+fi

@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# devilsec-copy-ip {local|vpn|target}
+# Copies the requested IP address to the system clipboard. Notifies via dunst.
+
+set -uo pipefail
+
+mode="${1:-local}"
+ip=""
+
+case "$mode" in
+    local)
+        # First non-loopback IPv4 on a real interface (skips docker/tun)
+        ip=$(ip -4 -o addr show 2>/dev/null | \
+            awk '$2 !~ /^(lo|docker|tun|veth|br-)/ {split($4,a,"/"); print a[1]; exit}')
+        ;;
+    vpn)
+        ip=$(ip -4 -o addr show 2>/dev/null | \
+            awk '$2 ~ /^(tun|tap|wg)/ {split($4,a,"/"); print a[1]; exit}')
+        ;;
+    target)
+        ip=$(cat "$HOME/.config/devilsec/target-ip" 2>/dev/null)
+        ;;
+    *)
+        echo "usage: devilsec-copy-ip {local|vpn|target}" >&2
+        exit 1
+        ;;
+esac
+
+if [[ -z "$ip" ]]; then
+    notify-send -u normal "DEVILSEC · copy ip" "no $mode IP found"
+    exit 1
+fi
+
+# Copy to all three X clipboards
+if command -v xclip &>/dev/null; then
+    printf '%s' "$ip" | xclip -selection clipboard
+    printf '%s' "$ip" | xclip -selection primary
+elif command -v xsel &>/dev/null; then
+    printf '%s' "$ip" | xsel --clipboard
+fi
+
+notify-send -u low "DEVILSEC · ${mode} ip" "$ip"

@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# DEVILSEC · GTK theme applier
+# We don't ship a full custom GTK theme (that's huge and brittle across GTK
+# versions). Instead we apply Adwaita-dark and override the accent via the
+# user's gtk-3.0/gtk.css and gtk-4.0/gtk.css with DEVILSEC violet/crimson.
+
+set -uo pipefail
+
+THEME_NAME="${1:-Adwaita-dark}"
+
+# 1. xsettings via lxappearance/gsettings
+if command -v gsettings &>/dev/null; then
+    gsettings set org.gnome.desktop.interface gtk-theme    "$THEME_NAME" 2>/dev/null || true
+    gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' 2>/dev/null || true
+    gsettings set org.gnome.desktop.interface icon-theme   "Papirus-Dark" 2>/dev/null || true
+fi
+
+# 2. fallback ~/.gtkrc-2.0 / settings.ini
+mkdir -p "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"
+
+cat > "$HOME/.config/gtk-3.0/settings.ini" <<EOF
+[Settings]
+gtk-theme-name=$THEME_NAME
+gtk-icon-theme-name=Papirus-Dark
+gtk-cursor-theme-name=Adwaita
+gtk-font-name=Cantarell 11
+gtk-application-prefer-dark-theme=1
+EOF
+
+cat > "$HOME/.config/gtk-4.0/settings.ini" <<EOF
+[Settings]
+gtk-application-prefer-dark-theme=1
+gtk-icon-theme-name=Papirus-Dark
+gtk-font-name=Cantarell 11
+EOF
+
+# 3. DEVILSEC accent overrides (GTK 3 and 4) — keeps the Adwaita base, but
+#    repaints accents, selections and focus rings in our violet/crimson.
+cat > "$HOME/.config/gtk-3.0/gtk.css" <<'EOF'
+/* DEVILSEC · GTK 3 accent override */
+@define-color devilsec_violet  #8A2BE2;
+@define-color devilsec_crimson #DC2641;
+@define-color devilsec_bg      #0E0B12;
+@define-color devilsec_bg_alt  #16121C;
+
+/* Selection */
+*:selected,
+*:selected:focus {
+    background-color: @devilsec_violet;
+    color: #ffffff;
+}
+/* Focus rings */
+*:focus {
+    outline-color: alpha(@devilsec_violet, 0.6);
+}
+/* Switches & checkboxes */
+checkbutton check:checked,
+radiobutton radio:checked,
+switch:checked {
+    background-color: @devilsec_violet;
+    color: #ffffff;
+}
+/* Progress / level bars */
+progressbar progress,
+levelbar block.filled {
+    background-color: @devilsec_violet;
+}
+/* Tooltips */
+tooltip {
+    background-color: @devilsec_bg_alt;
+    border: 1px solid @devilsec_violet;
+    color: #E8E3F2;
+}
+EOF
+
+cat > "$HOME/.config/gtk-4.0/gtk.css" <<'EOF'
+/* DEVILSEC · GTK 4 accent override */
+@define-color accent_bg_color      #8A2BE2;
+@define-color accent_color         #8A2BE2;
+@define-color accent_fg_color      #ffffff;
+@define-color destructive_bg_color #DC2641;
+@define-color destructive_color    #DC2641;
+EOF
+
+echo "[ok] GTK theme set to '$THEME_NAME' with DEVILSEC accents"

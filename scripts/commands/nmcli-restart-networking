@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+sudo systemctl restart NetworkManager
+echo "NetworkManager restarted"

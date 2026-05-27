@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+dev="${1:-$(nmcli -t -f DEVICE,STATE device | grep ':connected$' | cut -d: -f1 | head -1)}"
+[[ -n "$dev" ]] && nmcli device disconnect "$dev"

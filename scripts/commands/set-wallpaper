@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# set-wallpaper [<image-path>]
+# With no arg, opens a rofi picker. With path, applies it directly.
+set -uo pipefail
+WALL_DIR="$HOME/Pictures/devilsec-wallpapers"
+LINK="$HOME/.config/devilsec-wallpaper"
+STATE="$HOME/.config/devilsec/wallpaper.state"
+mkdir -p "$(dirname "$STATE")"
+
+if [[ -n "${1:-}" ]]; then
+    [[ -f "$1" ]] || { echo "no such file: $1" >&2; exit 1; }
+    feh --no-fehbg --bg-fill "$1"
+    ln -sf "$(readlink -f "$1")" "$LINK"
+    echo "$(readlink -f "$1")" > "$STATE"
+    notify-send -u low "DEVILSEC" "wallpaper: $(basename "$1")"
+    exit 0
+fi
+
+mapfile -t walls < <(find "$WALL_DIR" -type f \
+    \( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.webp" \) | sort)
+
+if (( ${#walls[@]} == 0 )); then
+    notify-send "DEVILSEC" "no wallpapers in $WALL_DIR"; exit 1
+fi
+
+if command -v rofi &>/dev/null && [[ -n "${DISPLAY:-}" ]]; then
+    pick=$(printf '%s\n' "${walls[@]}" | xargs -n1 basename | \
+        rofi -dmenu -i -p "wallpaper" \
+        -theme "$HOME/.config/rofi/themes/devilsec.rasi" 2>/dev/null)
+    if [[ -n "$pick" ]]; then
+        for w in "${walls[@]}"; do
+            [[ "$(basename "$w")" == "$pick" ]] && exec "$0" "$w"
+        done
+    fi
+else
+    select w in "${walls[@]}"; do
+        [[ -n "$w" ]] && exec "$0" "$w"
+    done
+fi
