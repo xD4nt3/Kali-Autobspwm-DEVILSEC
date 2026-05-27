@@ -36,38 +36,12 @@ This environment was built with a practical idea:
 
 ## Preview
 
-Place your environment screenshots here:
-
-```text
-docs/images/devilsec-preview.png
-docs/images/desktop-main.png
-docs/images/styx-panel.png
-docs/images/kitty-tabs.png
-docs/images/wallpapers-grid.png
-```
-
-Recommended image structure:
-
-```text
-docs/
-└── images/
-    ├── devilsec-preview.png
-    ├── desktop-main.png
-    ├── styx-panel.png
-    ├── kitty-tabs.png
-    ├── rofi-launcher.png
-    ├── polybar.png
-    └── wallpapers-grid.png
-```
-
-Example usage inside this README:
-
-```md
-<img src="docs/images/desktop-main.png" width="850" alt="DEVILSEC desktop">
-<img src="docs/images/styx-panel.png" width="650" alt="styx control panel">
-```
-
----
+<img src="docs/devilsec-preview.png" width="850">
+<img src="docs/devilsec2.png" width="850">
+<img src="docs/preview0.png" width="850">
+<img src="docs/preview2.png" width="850">
+<img src="docs/preview3.png" width="850">
+<img src="docs/preview4.png" width="850">
 
 ## Wallpapers
 
@@ -99,20 +73,6 @@ themes/wallpapers/
 ├── purgatory.png
 └── samurai.png
 ```
-
-Recommended screenshots for GitHub:
-
-```text
-docs/images/wallpapers-grid.png
-```
-
-You can create a wallpaper grid manually and reference it like this:
-
-```md
-<img src="docs/images/wallpapers-grid.png" width="850" alt="DEVILSEC wallpaper pack">
-```
-
----
 
 ## Features
 
