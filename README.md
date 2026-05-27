@@ -2,7 +2,7 @@
 
 # DEVILSEC Environment
 
-<img src="docs/images/devilsec-preview.png" width="850" alt="DEVILSEC Kali bspwm environment preview">
+<img src="docs/devilsec-preview.png" width="850" alt="DEVILSEC Kali bspwm environment preview">
 
 <br>
 
