@@ -43,37 +43,6 @@ This environment was built with a practical idea:
 <img src="docs/preview3.png" width="850">
 <img src="docs/preview4.png" width="850">
 
-## Wallpapers
-
-The wallpaper pack lives inside:
-
-```text
-themes/wallpapers/
-```
-
-During installation, all wallpapers are copied automatically to:
-
-```text
-~/Pictures/devilsec-wallpapers/
-```
-
-Current wallpaper pack:
-
-```text
-themes/wallpapers/
-├── ascend.png
-├── dante.png
-├── dante_devilmayhack.png
-├── devilmayhack.png
-├── devilmayhack_clean.png
-├── devilsec_japan.png
-├── fightclub.png
-├── inferno.png
-├── limbo.png
-├── purgatory.png
-└── samurai.png
-```
-
 ## Features
 
 ### Desktop Stack
