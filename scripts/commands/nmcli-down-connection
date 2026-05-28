@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-name="${1:?usage: nmcli-down-connection <name>}"
-nmcli connection down "$name"

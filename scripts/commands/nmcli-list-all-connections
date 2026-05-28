@@ -1,2 +1,0 @@
-#!/usr/bin/env bash
-nmcli -t -f NAME,DEVICE,TYPE,UUID connection show | column -t -s:

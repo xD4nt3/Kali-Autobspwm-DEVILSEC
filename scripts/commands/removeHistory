@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-# removeHistory — delete the zsh history file
-set -uo pipefail
-HFILE="${HISTFILE:-$HOME/.zsh_history}"
-read -r -p "Delete $HFILE? [y/N] " a
-[[ "${a,,}" =~ ^y(es)?$ ]] || { echo "aborted"; exit 0; }
-rm -f "$HFILE"
-echo "[*] $HFILE removed"

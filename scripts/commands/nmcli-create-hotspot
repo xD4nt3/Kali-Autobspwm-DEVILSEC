@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-ssid="${1:-DEVILSEC-AP}"
-pass="${2:-devilsec123}"
-nmcli device wifi hotspot ssid "$ssid" password "$pass"

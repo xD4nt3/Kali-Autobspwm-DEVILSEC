@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-# clearHistory — wipe current zsh history buffer (does not touch the file)
-fc -p
-echo "[*] zsh in-memory history cleared (this shell only)"

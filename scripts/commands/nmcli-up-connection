@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-name="${1:?usage: nmcli-up-connection <name>}"
-nmcli connection up "$name"
