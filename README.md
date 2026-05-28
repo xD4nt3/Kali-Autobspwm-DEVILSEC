@@ -43,33 +43,66 @@ This environment was built with a practical idea:
 <img src="docs/preview3.png" width="850">
 <img src="docs/preview4.png" width="850">
 
-## Features
+## Core Features
 
-### Desktop Stack
+<div align="center">
 
-| Component | Purpose |
-|---|---|
-| `bspwm` | Tiling window manager |
-| `sxhkd` | Keyboard shortcut daemon |
-| `polybar` | Status bar with launchers and system info |
-| `picom` | Compositor, shadows and transparency |
-| `kitty` | GPU terminal with tabs and background opacity |
-| `rofi` | Application launcher and menus |
-| `dunst` | Notification daemon |
-| `zsh` | Main shell |
-| `starship` | Modern prompt |
-| `fastfetch` | Terminal system banner |
-| `styx` | DEVILSEC control panel |
+| Window Manager | Terminal | Launcher | Bar | Shell | Control Center |
+|---|---|---|---|---|---|
+| `bspwm` | `kitty` | `rofi` | `polybar` | `zsh` | `styx` |
+
+</div>
+
+DEVILSEC is not just a rice. It is a complete Kali workflow for offensive security, CTFs and lab operations.
+
+```text
+bspwm + sxhkd + polybar + picom + kitty + rofi + zsh + styx
+```
 
 ---
 
-## What makes it different?
+## Why DEVILSEC?
 
-### `styx` control panel
+<table>
+<tr>
+<td width="50%">
 
-`styx` is the command center of the environment.
+### Command-driven workflow
 
-It allows you to control wallpapers, themes, opacity, polybar, brightness, gamma, tools, scope and help panels from a terminal UI or from rofi.
+Fast keyboard navigation, terminal-first actions, rofi menus and custom shortcuts designed for hackers who live inside the keyboard.
+
+</td>
+<td width="50%">
+
+### Offensive-ready structure
+
+Tools, wordlists, pivoting helpers, BloodHound CE, PEASS, scope handling and CTF workspace helpers are organized under a clean operator workflow.
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### Visual control with `styx`
+
+Change wallpapers, opacity, themes, polybar, brightness, gamma, scope and help panels from one centralized control center.
+
+</td>
+<td width="50%">
+
+### Operator quality-of-life
+
+Instant keyboard layout switcher, background-only terminal opacity, IP copy helpers, custom aliases and ready-to-use lab commands.
+
+</td>
+</tr>
+</table>
+
+---
+
+## DEVILSEC Control Center
+
+`styx` is the main command center of the environment.
 
 ```bash
 styx
@@ -83,19 +116,75 @@ styx -m scope
 styx -m help
 ```
 
-Open graphical `styx` with:
+Shortcut:
 
 ```text
 Super + Alt + S
 ```
 
+Available modules:
+
+| Module | Purpose |
+|---|---|
+| `wallpaper` | Change DEVILSEC wallpapers |
+| `opacity` | Control kitty background opacity |
+| `theme` | Switch visual themes |
+| `polybar` | Change/reload bar variants |
+| `scope` | Manage target scope/IP |
+| `tools` | View offensive arsenal |
+| `brightness` | Adjust screen brightness |
+| `gamma` | Adjust color temperature |
+| `font` | Adjust terminal font size |
+| `help` | View quick help panel |
+
 ---
 
-### Keyboard layout switcher
+## Custom DEVILSEC Commands
 
-DEVILSEC includes an instant keyboard layout switcher for X11.
+### Visual workflow
 
-Useful when jumping between English keyboards and Latin American layouts.
+| Command | Description |
+|---|---|
+| `styx` | Open DEVILSEC control center |
+| `set-wallpaper` | Pick/apply wallpapers |
+| `set-wallpaper --any` | Apply a random wallpaper |
+| `devilsec-opacity 80` | Set kitty background opacity |
+| `devilsec-opacity reset` | Restore default opacity |
+| `devilsec-keyboard` | Open keyboard layout switcher |
+
+### Offensive workflow
+
+| Command | Description |
+|---|---|
+| `devilsec-arsenal` | Show installed offensive tools |
+| `arsenal` | Alias for `devilsec-arsenal` |
+| `adtools` | Show Active Directory tools |
+| `pivoting` | Show pivoting tools |
+| `mkt <name>` | Create a CTF/lab workspace |
+| `extract-ports <scan.gnmap>` | Extract ports from nmap output |
+| `wlfind <term>` | Search wordlists |
+| `peas-serve` | Serve PEASS-ng payloads |
+| `ligolo` | Ligolo helper wrapper |
+| `bloodhound-ce` | Manage BloodHound CE stack |
+
+### Network and scope
+
+| Command | Description |
+|---|---|
+| `devilsec-copy-ip local` | Copy local IP |
+| `devilsec-copy-ip vpn` | Copy VPN/tun IP |
+| `devilsec-copy-ip target` | Copy current target IP |
+| `styx -m scope` | Manage scope and target IP |
+| `nmcli-scan-wifi` | Scan WiFi networks |
+| `nmcli-wifi-info` | Show WiFi status |
+| `nmcli-create-hotspot` | Create hotspot |
+| `nmcli-restart-networking` | Restart networking |
+
+---
+
+## Keyboard Layout Switcher
+
+Switch instantly between English and Latin American keyboard layouts.
 
 ```bash
 devilsec-keyboard
@@ -104,7 +193,7 @@ devilsec-keyboard latam
 devilsec-keyboard show
 ```
 
-Alias:
+Aliases:
 
 ```bash
 kb
@@ -117,9 +206,7 @@ Shortcut:
 Super + Alt + K
 ```
 
-Available layouts:
-
-| Option | Layout |
+| Mode | Layout |
 |---|---|
 | `us` | English US |
 | `latam` | Latin America with dead tilde |
@@ -127,19 +214,19 @@ Available layouts:
 
 ---
 
-### Background-only opacity
+## Background-only Terminal Opacity
 
-DEVILSEC does not use the old “make the whole window transparent” trick.
+DEVILSEC uses kitty native background opacity instead of full-window transparency.
 
-Instead, kitty uses native background opacity, so:
+That means:
 
-- Terminal background becomes transparent.
-- Text remains solid.
-- Cursor remains solid.
-- Selection remains readable.
-- No more ghost text.
-
-Commands:
+```text
+transparent background
+solid text
+solid cursor
+clean selection
+no ghost text
+```
 
 ```bash
 devilsec-opacity show
@@ -147,132 +234,101 @@ devilsec-opacity 80
 devilsec-opacity 100
 devilsec-opacity reset
 devilsec-opacity apply
-```
-
-Through `styx`:
-
-```bash
 styx -m opacity
 ```
 
-Kitty live controls:
+Live controls:
 
-```text
-Ctrl + Shift + O    Increase opacity
-Ctrl + Shift + I    Decrease opacity
-```
+| Shortcut | Action |
+|---|---|
+| `Ctrl + Shift + O` | Increase opacity |
+| `Ctrl + Shift + I` | Decrease opacity |
 
 ---
 
-### Offensive arsenal
+## Offensive Arsenal
 
-DEVILSEC installs and organizes several offensive security tools under:
+DEVILSEC organizes its tools under:
 
 ```text
 /opt/devilsec/bin
 /opt/devilsec/tools
 /opt/devilsec/share
+/opt/devilsec/wordlists
 ```
 
-Everything under `/opt/devilsec/bin` is added to `$PATH`.
-
-View the arsenal:
+Everything in `/opt/devilsec/bin` is added to `$PATH`.
 
 ```bash
 devilsec-arsenal
 devilsec-arsenal --list
-devilsec-arsenal --raw
 devilsec-arsenal --search ldap
-devilsec-arsenal pivoting
 devilsec-arsenal active-directory
+devilsec-arsenal pivoting
 devilsec-arsenal impacket
 ```
 
-Aliases:
-
-```bash
-arsenal
-pivoting
-adtools
-```
-
-Categories:
-
-| Category | Examples |
+| Category | Tools |
 |---|---|
 | Active Directory | `nxc`, `bloodyAD`, `certipy`, `kerbrute`, `evil-winrm` |
 | Impacket | `psexec.py`, `secretsdump.py`, `GetUserSPNs.py`, `ntlmrelayx.py` |
 | Pivoting | `ligolo`, `ligolo-proxy`, `chisel` |
 | Relay / Coercion | `coercer`, `mitm6`, `pretender`, `donpapi` |
 | Recon / Web | `ffuf`, `gowitness`, `enum4linux-ng` |
-| PrivEsc / Post-Exploitation | `peas-serve`, `updog`, `shellpop` |
+| Post-Exploitation | `peas-serve`, `updog`, `shellpop` |
 
 ---
 
 ## Installation
 
-### Recommended
-
-Use this on a clean Kali Linux installation.
+Use it on a clean Kali Linux installation.
 
 ```bash
-git clone https://github.com/<TU_USUARIO>/<TU_REPO>.git
-cd <TU_REPO>
+git clone https://github.com/xD4nt3/Kali-Autobspwm-DEVILSEC.git
+cd Kali-Autobspwm-DEVILSEC
 chmod +x install.sh
 bash install.sh
 ```
 
-After installation:
+Then reboot:
 
 ```bash
 reboot
 ```
 
-At the login screen, select:
+At login, select:
 
 ```text
 bspwm
 ```
 
-Then log in normally.
-
----
-
-## Installation notes
-
-Do **not** run the installer as root.
-
-Correct:
+Do not run the installer as root:
 
 ```bash
 bash install.sh
 ```
 
-Incorrect:
+Not:
 
 ```bash
 sudo bash install.sh
 ```
 
-The installer will request `sudo` only when needed.
-
 ---
 
-## Installer phases
-
-The installer is split into phases:
+## Installer Flow
 
 ```text
-00-preflight     Preflight checks and system update
-10-base          Base packages, build dependencies and fonts
-20-wm            bspwm, sxhkd, picom, polybar, rofi, kitty
-30-shell         zsh, starship and shell plugins
-40-tools         Offensive toolchain
-50-bloodhound    BloodHound CE, optional
-60-wordlists     SecLists, PayloadsAllTheThings and rockyou
-70-dotfiles      Dotfiles, themes and wallpapers
-80-styx          styx control panel and helper commands
-99-postflight    Final sanity report
+00-preflight      System checks and update
+10-base           Base packages, fonts and dependencies
+20-wm             bspwm, sxhkd, picom, polybar, rofi, kitty
+30-shell          zsh, starship and shell plugins
+40-tools          Offensive toolchain
+50-bloodhound     BloodHound CE
+60-wordlists      SecLists, PayloadsAllTheThings and rockyou
+70-dotfiles       Dotfiles, themes and wallpapers
+80-styx           styx modules and helper commands
+99-postflight     Final validation
 ```
 
 Installer log:
@@ -283,92 +339,44 @@ cat .summon.log
 
 ---
 
-## Repository layout
+## Project Structure
 
 ```text
-devilsec/
+Kali-Autobspwm-DEVILSEC/
 ├── install.sh
-├── LICENSE
 ├── README.md
 ├── PATCHES-INTEGRATED.md
-│
 ├── assets/
-│   └── devilsec-logo.txt
-│
 ├── config/
 │   ├── bspwm/
-│   ├── dunst/
-│   ├── fastfetch/
-│   ├── kitty/
-│   ├── nvim/
-│   ├── picom/
-│   ├── polybar/
-│   ├── rofi/
 │   ├── sxhkd/
+│   ├── polybar/
+│   ├── picom/
+│   ├── kitty/
+│   ├── rofi/
 │   ├── zsh/
 │   └── starship.toml
-│
 ├── core/
-│   ├── forge.sh
 │   └── phases/
-│
-├── docs/
-│   ├── CUSTOMIZATION.md
-│   ├── KEYBINDINGS.md
-│   └── TROUBLESHOOTING.md
-│
 ├── scripts/
 │   ├── commands/
 │   ├── system/
 │   └── visual/
-│
 ├── themes/
 │   ├── polybar-themes/
 │   ├── rofi-themes/
 │   └── wallpapers/
-│
 └── tools-installer/
 ```
 
 ---
 
-## Main commands
+## Wallpapers
 
-### Control center
-
-```bash
-styx
-styx -g
-styx -m wallpaper
-styx -m opacity
-styx -m theme
-styx -m polybar
-styx -m compositor
-styx -m brightness
-styx -m gamma
-styx -m font
-styx -m tools
-styx -m scope
-styx -m help
-styx -m about
-```
-
----
-
-### Wallpaper commands
-
-```bash
-set-wallpaper
-set-wallpaper /path/to/image.png
-set-wallpaper --any
-styx -m wallpaper
-```
-
-Wallpaper state:
+Source wallpapers:
 
 ```text
-~/.config/devilsec/wallpaper.state
-~/.config/devilsec-wallpaper
+themes/wallpapers/
 ```
 
 Installed wallpapers:
@@ -377,112 +385,48 @@ Installed wallpapers:
 ~/Pictures/devilsec-wallpapers/
 ```
 
----
-
-### Opacity commands
-
-```bash
-devilsec-opacity show
-devilsec-opacity 80
-devilsec-opacity 100
-devilsec-opacity reset
-devilsec-opacity apply
-devilsec-opacity daemon
-styx -m opacity
-```
-
-Opacity state:
+Current wallpaper pack:
 
 ```text
-~/.config/devilsec/opacity.state
+ascend.png
+dante.png
+dante_devilmayhack.png
+devilmayhack.png
+devilmayhack_clean.png
+devilsec_japan.png
+fightclub.png
+inferno.png
+limbo.png
+purgatory.png
+samurai.png
 ```
 
----
-
-### Keyboard commands
-
-```bash
-devilsec-keyboard
-devilsec-keyboard us
-devilsec-keyboard latam
-devilsec-keyboard show
-```
-
-Aliases:
-
-```bash
-kb
-teclado
-```
-
-Keyboard state:
+Recommended repo preview location:
 
 ```text
-~/.config/devilsec/keyboard.state
+docs/images/wallpapers-grid.png
+```
+
+Example:
+
+```md
+<img src="docs/images/wallpapers-grid.png" width="850" alt="DEVILSEC wallpapers">
 ```
 
 ---
 
-### Scope manager
+## Lab Workspace Helper
+
+Create clean CTF/lab workspaces with one command:
 
 ```bash
-styx -m scope
+mkt fightclub
 ```
 
-Scope files:
+Output:
 
 ```text
-~/.config/devilsec/scope.list
-~/.config/devilsec/target-ip
-```
-
-Copy target IP:
-
-```bash
-devilsec-copy-ip target
-```
-
-Shortcut:
-
-```text
-Super + Shift + F3
-```
-
----
-
-### IP helpers
-
-```bash
-devilsec-copy-ip local
-devilsec-copy-ip vpn
-devilsec-copy-ip target
-```
-
-Shortcuts:
-
-```text
-Super + Shift + F1    Copy local IP
-Super + Shift + F2    Copy VPN IP
-Super + Shift + F3    Copy target IP
-```
-
----
-
-### CTF workflow helpers
-
-```bash
-mkt lab-name
-extract-ports scan.gnmap
-xcopy file.txt
-cat file.txt
-catl file.txt
-catn file.txt
-```
-
-`mkt` creates a CTF-style workspace:
-
-```text
-lab-name/
+fightclub/
 ├── nmap/
 ├── content/
 ├── exploits/
@@ -493,14 +437,14 @@ lab-name/
 
 ---
 
-### Wordlists
+## Wordlists
 
 ```bash
 wlfind directory
 wlfind raft -l
 ```
 
-Wordlist root:
+Main location:
 
 ```text
 /opt/devilsec/wordlists/
@@ -509,34 +453,16 @@ Wordlist root:
 Included:
 
 ```text
-/opt/devilsec/wordlists/SecLists
-/opt/devilsec/wordlists/PayloadsAllTheThings
-/opt/devilsec/wordlists/rockyou.txt
+SecLists
+PayloadsAllTheThings
+rockyou.txt
 ```
 
 ---
 
-### Pivoting
+## BloodHound CE
 
-```bash
-ligolo
-ligolo proxy
-ligolo proxy 11601
-ligolo stage
-ligolo serve
-```
-
-Staged agents:
-
-```text
-/opt/devilsec/share/pivoting/ligolo/
-```
-
----
-
-### BloodHound CE
-
-BloodHound CE is optional during installation.
+BloodHound CE can be managed directly from the terminal.
 
 ```bash
 bloodhound-ce status
@@ -556,76 +482,18 @@ http://localhost:8080/ui/login
 
 ---
 
-### PEASS
+## Keybindings
 
-```bash
-peas-serve
-peas-serve 8080
-```
+> `Super` = Windows key
 
-Serves PEASS-ng from:
-
-```text
-/opt/devilsec/share/peass
-```
-
----
-
-### Network helpers
-
-```bash
-nmcli-connect-device
-nmcli-connect-device "SSID" "PASSWORD"
-
-nmcli-disconnect-device
-nmcli-list-active-connections
-nmcli-list-all-connections
-nmcli-list-devices
-nmcli-scan-wifi
-nmcli-wifi-info
-nmcli-wifi-on
-nmcli-wifi-off
-nmcli-wwan-on
-nmcli-wwan-off
-
-nmcli-create-hotspot
-nmcli-create-hotspot DEVILSEC-AP devilsec123
-
-nmcli-delete-connection "connection-name"
-nmcli-up-connection "connection-name"
-nmcli-down-connection "connection-name"
-nmcli-restart-networking
-```
-
----
-
-### History helpers
-
-```bash
-clearHistory
-removeHistory
-```
-
-`clearHistory` clears the current zsh in-memory history.
-
-`removeHistory` deletes the zsh history file after confirmation.
-
----
-
-## Keyboard shortcuts
-
-> `Super` means the Windows key.
-
----
-
-### Core
+<details>
+<summary><b>Core shortcuts</b></summary>
 
 | Shortcut | Action |
 |---|---|
 | `Super + Return` | Open kitty |
 | `Super + Shift + Return` | Open floating kitty |
 | `Super + D` | Rofi app launcher |
-| `Super + Shift + D` | Rofi app launcher |
 | `Super + Tab` | Rofi window switcher |
 | `Super + R` | Rofi run prompt |
 | `Super + Shift + P` | Power menu |
@@ -634,19 +502,13 @@ removeHistory
 | `Super + Shift + R` | Reload bspwm |
 | `Super + Shift + Q` | Quit bspwm session |
 | `Super + Ctrl + L` | Lock screen |
+| `Super + Alt + S` | Open styx |
+| `Super + Alt + K` | Keyboard layout switcher |
 
----
+</details>
 
-### DEVILSEC actions
-
-| Shortcut | Action |
-|---|---|
-| `Super + Alt + S` | Open styx graphical control panel |
-| `Super + Alt + K` | Open keyboard layout switcher |
-
----
-
-### Kitty tabs through bspwm shortcuts
+<details>
+<summary><b>Kitty tabs from bspwm</b></summary>
 
 | Shortcut | Action |
 |---|---|
@@ -655,12 +517,56 @@ removeHistory
 | `Super + Alt + L` | Next kitty tab |
 | `Super + Alt + H` | Previous kitty tab |
 | `Super + Alt + N` | Rename kitty tab |
-| `Super + Alt + Shift + L` | Move kitty tab forward |
-| `Super + Alt + Shift + H` | Move kitty tab backward |
+| `Super + Alt + Shift + L` | Move tab forward |
+| `Super + Alt + Shift + H` | Move tab backward |
 
----
+</details>
 
-### IP helpers
+<details>
+<summary><b>Window management</b></summary>
+
+| Shortcut | Action |
+|---|---|
+| `Super + W` | Close window |
+| `Super + Shift + W` | Kill window |
+| `Super + S` | Toggle floating |
+| `Super + F` | Toggle fullscreen |
+| `Super + T` | Set tiled |
+| `Super + M` | Cycle layout |
+| `Super + Shift + B` | Balance bspwm tree |
+
+</details>
+
+<details>
+<summary><b>Focus, move and resize</b></summary>
+
+| Shortcut | Action |
+|---|---|
+| `Super + Arrows` | Focus window |
+| `Super + Shift + Arrows` | Preselect direction |
+| `Super + Shift + Space` | Cancel preselection |
+| `Super + Alt + Arrows` | Resize window |
+| `Super + Alt + Shift + Arrows` | Contract window |
+| `Super + Ctrl + Arrows` | Move floating window |
+
+</details>
+
+<details>
+<summary><b>Workspaces</b></summary>
+
+| Shortcut | Action |
+|---|---|
+| `Super + 1..9` | Switch workspace |
+| `Super + 0` | Switch workspace 10 |
+| `Super + Shift + 1..9` | Send window to workspace |
+| `Super + Shift + 0` | Send window to workspace 10 |
+| `Super + Ctrl + 1..9` | Send window and follow |
+| `Super + Ctrl + 0` | Send window to workspace 10 and follow |
+
+</details>
+
+<details>
+<summary><b>IP helpers</b></summary>
 
 | Shortcut | Action |
 |---|---|
@@ -668,9 +574,10 @@ removeHistory
 | `Super + Shift + F2` | Copy VPN IP |
 | `Super + Shift + F3` | Copy target IP |
 
----
+</details>
 
-### Brightness, volume and temperature
+<details>
+<summary><b>Brightness, volume and temperature</b></summary>
 
 | Shortcut | Action |
 |---|---|
@@ -681,115 +588,20 @@ removeHistory
 | `Super + F5` | Toggle mute |
 | `Super + F6` | Volume down |
 | `Super + F7` | Volume up |
-| `XF86AudioMute` | Toggle mute |
-| `XF86AudioRaiseVolume` | Volume up |
-| `XF86AudioLowerVolume` | Volume down |
 | `Super + F8` | Toggle color temperature |
 | `Super + F9` | Temperature down |
 | `Super + F10` | Temperature up |
 
----
+</details>
 
-### Window management
-
-| Shortcut | Action |
-|---|---|
-| `Super + W` | Close focused window |
-| `Super + Shift + W` | Kill focused window |
-| `Super + S` | Toggle floating |
-| `Super + M` | Cycle desktop layout |
-| `Super + F` | Toggle fullscreen |
-| `Super + T` | Set window back to tiled |
-| `Super + Shift + B` | Balance bspwm tree |
-
----
-
-### Focus
-
-| Shortcut | Action |
-|---|---|
-| `Super + Left` | Focus window west |
-| `Super + Down` | Focus window south |
-| `Super + Up` | Focus window north |
-| `Super + Right` | Focus window east |
-
----
-
-### Preselectors
-
-| Shortcut | Action |
-|---|---|
-| `Super + Shift + Left` | Preselect west |
-| `Super + Shift + Down` | Preselect south |
-| `Super + Shift + Up` | Preselect north |
-| `Super + Shift + Right` | Preselect east |
-| `Super + Shift + Space` | Cancel preselection |
-
----
-
-### Resize
-
-| Shortcut | Action |
-|---|---|
-| `Super + Alt + Left` | Expand window left |
-| `Super + Alt + Right` | Expand window right |
-| `Super + Alt + Up` | Expand window up |
-| `Super + Alt + Down` | Expand window down |
-| `Super + Alt + Shift + Left` | Contract window from left/right |
-| `Super + Alt + Shift + Right` | Contract window from right/left |
-| `Super + Alt + Shift + Up` | Contract window vertically |
-| `Super + Alt + Shift + Down` | Contract window vertically |
-
----
-
-### Move floating windows
-
-| Shortcut | Action |
-|---|---|
-| `Super + Ctrl + Left` | Move floating window left |
-| `Super + Ctrl + Down` | Move floating window down |
-| `Super + Ctrl + Up` | Move floating window up |
-| `Super + Ctrl + Right` | Move floating window right |
-
----
-
-### Mouse bindings
-
-| Shortcut | Action |
-|---|---|
-| `Super + Left Click` | Select / move window |
-| `Super + Middle Click` | Move window |
-| `Super + Right Click` | Resize window from corner |
-
----
-
-### Workspaces
-
-| Shortcut | Action |
-|---|---|
-| `Super + 1` to `Super + 9` | Switch to workspace 1-9 |
-| `Super + 0` | Switch to workspace 10 |
-| `Super + Shift + 1` to `Super + Shift + 9` | Send window to workspace 1-9 |
-| `Super + Shift + 0` | Send window to workspace 10 |
-| `Super + Ctrl + 1` to `Super + Ctrl + 9` | Send window to workspace and follow |
-| `Super + Ctrl + 0` | Send window to workspace 10 and follow |
-
----
-
-### Screenshots
+<details>
+<summary><b>Screenshots and apps</b></summary>
 
 | Shortcut | Action |
 |---|---|
 | `Print` | Flameshot region screenshot |
-| `Super + Print` | Full screenshot to `~/Pictures` |
-| `Shift + Print` | Current screen screenshot to `~/Pictures` |
-
----
-
-### Applications
-
-| Shortcut | Action |
-|---|---|
+| `Super + Print` | Full screenshot |
+| `Shift + Print` | Current screen screenshot |
 | `Super + Shift + F` | Firefox |
 | `Super + Shift + B` | Burp Suite |
 | `Super + Shift + V` | VS Code |
@@ -798,22 +610,14 @@ removeHistory
 | `Super + Shift + A` | Postman |
 | `Super + Shift + O` | Obsidian |
 
----
-
-### Media
-
-| Shortcut | Action |
-|---|---|
-| `XF86AudioPlay` | Play / pause |
-| `XF86AudioStop` | Stop |
-| `XF86AudioPrev` | Previous |
-| `XF86AudioNext` | Next |
+</details>
 
 ---
 
-## Kitty shortcuts
+## Kitty Native Shortcuts
 
-These are native kitty shortcuts from `kitty.conf`.
+<details>
+<summary><b>Terminal shortcuts</b></summary>
 
 | Shortcut | Action |
 |---|---|
@@ -823,83 +627,59 @@ These are native kitty shortcuts from `kitty.conf`.
 | `Ctrl + Shift + Right` | Next tab |
 | `Ctrl + Shift + Left` | Previous tab |
 | `Ctrl + Shift + Alt + T` | Rename tab |
-| `Ctrl + Shift + Enter` | New kitty window / split |
+| `Ctrl + Shift + Enter` | New split/window |
 | `Ctrl + Shift + L` | Next kitty window |
 | `Ctrl + Shift + H` | Previous kitty window |
 | `Ctrl + Shift + +` | Increase font size |
 | `Ctrl + Shift + -` | Decrease font size |
 | `Ctrl + Shift + Backspace` | Reset font size |
-| `Ctrl + Shift + O` | Increase background opacity |
-| `Ctrl + Shift + I` | Decrease background opacity |
-| `F1` | Copy to kitty buffer A |
-| `F2` | Paste from kitty buffer A |
-| `F3` | Copy to kitty buffer B |
-| `F4` | Paste from kitty buffer B |
+| `Ctrl + Shift + O` | Increase opacity |
+| `Ctrl + Shift + I` | Decrease opacity |
+| `F1` | Copy to buffer A |
+| `F2` | Paste from buffer A |
+| `F3` | Copy to buffer B |
+| `F4` | Paste from buffer B |
+
+</details>
 
 ---
 
-## Zsh aliases
-
-### DEVILSEC aliases
+## Zsh Aliases
 
 ```bash
-arsenal='devilsec-arsenal'
-pivoting='devilsec-arsenal pivoting'
-adtools='devilsec-arsenal active-directory'
-kb='devilsec-keyboard'
-teclado='devilsec-keyboard'
-```
-
-### Better `cat`
-
-```bash
-cat     # bat without paging and without line numbers
-catl    # bat with paging, no line numbers
-catn    # bat with line numbers
-```
-
-### Useful aliases
-
-```bash
-myip
-tunip
-pyserve
-urlencode
-urldecode
-b64
-b64d
-ports
-```
-
-### Git aliases
-
-```bash
-g
-gst
-gd
-gl
-gco
-gp
+arsenal       # devilsec-arsenal
+pivoting      # pivoting tools
+adtools       # Active Directory tools
+kb            # keyboard switcher
+teclado       # keyboard switcher
+cat           # bat without paging
+catl          # bat with paging
+catn          # bat with line numbers
+myip          # show local IP
+tunip         # show VPN IP
+pyserve       # quick Python HTTP server
+urlencode     # URL encode
+urldecode     # URL decode
+b64           # base64 encode
+b64d          # base64 decode
+ports         # extract ports
 ```
 
 ---
 
 ## Customization
 
-### Change wallpaper
-
-```bash
-styx -m wallpaper
-set-wallpaper
-set-wallpaper --any
-set-wallpaper ~/Pictures/my-wallpaper.png
-```
-
-### Change theme
-
-```bash
-styx -m theme
-```
+| Task | Command |
+|---|---|
+| Change wallpaper | `styx -m wallpaper` |
+| Random wallpaper | `set-wallpaper --any` |
+| Change opacity | `styx -m opacity` |
+| Change theme | `styx -m theme` |
+| Change polybar | `styx -m polybar` |
+| Change font size | `styx -m font` |
+| Change brightness | `styx -m brightness` |
+| Change gamma | `styx -m gamma` |
+| Change keyboard | `devilsec-keyboard` |
 
 Available themes:
 
@@ -909,13 +689,7 @@ Inferno
 Purgatory
 ```
 
-### Change polybar variant
-
-```bash
-styx -m polybar
-```
-
-Available variants:
+Available polybar variants:
 
 ```text
 default
@@ -923,69 +697,29 @@ minimal
 spectral
 ```
 
-### Change font size
+---
 
-```bash
-styx -m font
-```
+## Installed Locations
 
-### Change brightness
-
-```bash
-styx -m brightness
-```
-
-### Change gamma / temperature
-
-```bash
-styx -m gamma
-```
+| Type | Path |
+|---|---|
+| bspwm config | `~/.config/bspwm/` |
+| sxhkd config | `~/.config/sxhkd/` |
+| polybar config | `~/.config/polybar/` |
+| kitty config | `~/.config/kitty/` |
+| rofi config | `~/.config/rofi/` |
+| DEVILSEC binaries | `/opt/devilsec/bin/` |
+| DEVILSEC tools | `/opt/devilsec/tools/` |
+| DEVILSEC shared files | `/opt/devilsec/share/` |
+| Wordlists | `/opt/devilsec/wordlists/` |
+| Wallpapers | `~/Pictures/devilsec-wallpapers/` |
+| Runtime state | `~/.config/devilsec/` |
 
 ---
 
-## Where configs are deployed
+## Recommended Screenshots
 
-After installation:
-
-```text
-~/.config/bspwm/
-~/.config/sxhkd/
-~/.config/polybar/
-~/.config/picom/
-~/.config/kitty/
-~/.config/rofi/
-~/.config/dunst/
-~/.config/fastfetch/
-~/.config/starship.toml
-~/.zshrc
-```
-
-DEVILSEC system files:
-
-```text
-/opt/devilsec/bin/
-/opt/devilsec/tools/
-/opt/devilsec/share/
-/opt/devilsec/wordlists/
-```
-
-Wallpapers:
-
-```text
-~/Pictures/devilsec-wallpapers/
-```
-
-Runtime state:
-
-```text
-~/.config/devilsec/
-```
-
----
-
-## Recommended screenshots for the repo
-
-To make the GitHub repo look clean, upload screenshots here:
+Upload your screenshots here:
 
 ```text
 docs/images/
@@ -993,17 +727,17 @@ docs/images/
 
 Suggested files:
 
-| File | Purpose |
-|---|---|
-| `devilsec-preview.png` | Main banner / hero image |
-| `desktop-main.png` | Full desktop screenshot |
-| `styx-panel.png` | styx control panel |
-| `kitty-tabs.png` | Kitty terminal tabs |
-| `rofi-launcher.png` | Rofi launcher |
-| `polybar.png` | Bar close-up |
-| `wallpapers-grid.png` | Wallpaper collection preview |
+```text
+devilsec-preview.png
+desktop-main.png
+styx-panel.png
+kitty-tabs.png
+rofi-launcher.png
+polybar.png
+wallpapers-grid.png
+```
 
-Then reference them like this:
+Use them like this:
 
 ```md
 <img src="docs/images/devilsec-preview.png" width="850">
@@ -1013,64 +747,50 @@ Then reference them like this:
 
 ## Troubleshooting
 
-### I cannot see bspwm in the login screen
-
-Make sure the session file exists:
+<details>
+<summary><b>bspwm does not appear in login screen</b></summary>
 
 ```bash
 ls /usr/share/xsessions/bspwm.desktop
-```
-
-If needed, rerun:
-
-```bash
 bash install.sh
 ```
 
----
+</details>
 
-### Shortcuts are not working
+<details>
+<summary><b>Shortcuts are not working</b></summary>
 
-Reload sxhkd:
+```bash
+pkill -USR1 -x sxhkd
+pgrep -a sxhkd
+```
+
+Shortcut:
 
 ```text
 Super + Escape
 ```
 
-Or manually:
+</details>
 
-```bash
-pkill -USR1 -x sxhkd
-```
-
-Check if sxhkd is running:
-
-```bash
-pgrep -a sxhkd
-```
-
----
-
-### Polybar is not showing
-
-Restart it:
+<details>
+<summary><b>Polybar is not showing</b></summary>
 
 ```bash
 pkill -x polybar
 ~/.config/polybar/launch.sh
 ```
 
-Or use:
+Or:
 
 ```bash
 styx -m polybar
 ```
 
----
+</details>
 
-### Transparency looks wrong
-
-Reset opacity:
+<details>
+<summary><b>Transparency looks wrong</b></summary>
 
 ```bash
 devilsec-opacity reset
@@ -1079,50 +799,32 @@ devilsec-opacity 80
 
 Then restart kitty.
 
----
+</details>
 
-### Keyboard is in the wrong layout
-
-Open the switcher:
+<details>
+<summary><b>Keyboard layout is wrong</b></summary>
 
 ```bash
 devilsec-keyboard
-```
-
-Or force Latin American layout:
-
-```bash
 devilsec-keyboard latam
-```
-
-Or force English US:
-
-```bash
 devilsec-keyboard us
 ```
 
----
+</details>
 
-### Wallpaper does not persist
-
-Apply it again:
+<details>
+<summary><b>Wallpaper does not persist</b></summary>
 
 ```bash
 set-wallpaper
-```
-
-Check state:
-
-```bash
 cat ~/.config/devilsec/wallpaper.state
 ls -la ~/.config/devilsec-wallpaper
 ```
 
----
+</details>
 
-### ZIP extraction lost executable permissions
-
-Run:
+<details>
+<summary><b>ZIP extraction lost executable permissions</b></summary>
 
 ```bash
 chmod +x install.sh
@@ -1131,52 +833,40 @@ chmod +x scripts/system/*
 chmod +x scripts/system/styx-modules/*.sh
 chmod +x scripts/commands/*
 chmod +x config/bspwm/bspwmrc
-```
-
-Then:
-
-```bash
 bash install.sh
 ```
 
----
-
-## Ethical use
-
-This environment is intended for:
-
-- Authorized security testing.
-- CTFs.
-- Lab environments.
-- Training.
-- Research.
-- Internal assessments with permission.
-
-Do not use this toolkit against systems you do not own or do not have explicit permission to test.
+</details>
 
 ---
 
-## Roadmap ideas
+## Ethical Use
 
-- Add installer profile modes: minimal, full, CTF, enterprise.
-- Add wallpaper preview grid inside `styx`.
-- Add `styx` module for VPN profiles.
-- Add backup/restore manager.
-- Add one-command export of environment screenshots.
-- Add Devil May Hack integration panel.
-- Add automatic lab workspace generator.
-- Add update manager for `/opt/devilsec`.
-
----
-
-## Credits
-
-Built for operators, CTF players, red team students and people who like their Kali environment to look as sharp as their methodology.
-
-Made with:
+DEVILSEC is built for authorized security work only:
 
 ```text
-bspwm + sxhkd + kitty + polybar + rofi + picom + zsh
+CTFs
+labs
+training
+research
+internal assessments
+authorized pentesting
+```
+
+Do not use this environment against systems without explicit permission.
+
+---
+
+## Roadmap
+
+```text
+[ ] Installer profiles: minimal / full / CTF / enterprise
+[ ] Wallpaper preview inside styx
+[ ] VPN profile manager
+[ ] Backup and restore manager
+[ ] DEVILSEC update manager
+[ ] Devil May Hack integration
+[ ] One-command lab environment generator
 ```
 
 ---
@@ -1185,6 +875,12 @@ bspwm + sxhkd + kitty + polybar + rofi + picom + zsh
 
 ## DEVILSEC
 
-**Offensive workflow. Minimal friction. Maximum style.**
+```text
+offensive workflow
+minimal friction
+maximum style
+```
+
+**Built for operators, CTF players and people who want their Kali to look as sharp as their methodology.**
 
 </div>
