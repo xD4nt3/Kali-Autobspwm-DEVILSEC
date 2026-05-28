@@ -400,19 +400,6 @@ limbo.png
 purgatory.png
 samurai.png
 ```
-
-Recommended repo preview location:
-
-```text
-docs/images/wallpapers-grid.png
-```
-
-Example:
-
-```md
-<img src="docs/images/wallpapers-grid.png" width="850" alt="DEVILSEC wallpapers">
-```
-
 ---
 
 ## Lab Workspace Helper
@@ -856,30 +843,6 @@ authorized pentesting
 Do not use this environment against systems without explicit permission.
 
 ---
-
-## Roadmap
-
-```text
-[ ] Installer profiles: minimal / full / CTF / enterprise
-[ ] Wallpaper preview inside styx
-[ ] VPN profile manager
-[ ] Backup and restore manager
-[ ] DEVILSEC update manager
-[ ] Devil May Hack integration
-[ ] One-command lab environment generator
-```
-
----
-
-<div align="center">
-
-## DEVILSEC
-
-```text
-offensive workflow
-minimal friction
-maximum style
-```
 
 **Built for operators, CTF players and people who want their Kali to look as sharp as their methodology.**
 
