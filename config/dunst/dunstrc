@@ -1,0 +1,85 @@
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║  DEVILSEC · dunst                                                        ║
+# ║  Quiet, dim, top-right. Crimson urgents. Subtle violet borders.          ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+
+[global]
+    monitor = 0
+    follow = mouse
+
+    width = (240, 360)
+    height = (40, 200)
+    origin = top-right
+    offset = (16, 50)
+    scale = 0
+    notification_limit = 4
+
+    progress_bar = true
+    progress_bar_height = 8
+    progress_bar_frame_width = 0
+    progress_bar_min_width = 150
+    progress_bar_max_width = 320
+
+    indicate_hidden = yes
+    transparency = 6
+    separator_height = 2
+    padding = 12
+    horizontal_padding = 14
+    text_icon_padding = 10
+    frame_width = 1
+    frame_color = "#8A2BE2"
+    separator_color = "#16121C"
+    sort = yes
+
+    font = JetBrainsMono Nerd Font 10
+    line_height = 0
+    markup = full
+    format = "<b>%s</b>\n%b"
+    alignment = left
+    vertical_alignment = center
+    show_age_threshold = 60
+    ellipsize = end
+    ignore_newline = no
+    stack_duplicates = true
+    hide_duplicate_count = false
+    show_indicators = yes
+
+    icon_position = left
+    min_icon_size = 0
+    max_icon_size = 36
+    icon_corner_radius = 6
+
+    sticky_history = yes
+    history_length = 30
+
+    dmenu = /usr/bin/rofi -dmenu -i -p "dunst" -theme ~/.config/rofi/themes/devilsec.rasi
+    browser = /usr/bin/xdg-open
+
+    always_run_script = true
+    title = Dunst
+    class = Dunst
+    corner_radius = 10
+    ignore_dbusclose = false
+    force_xwayland = false
+    force_xinerama = false
+    mouse_left_click = close_current
+    mouse_middle_click = do_action, close_current
+    mouse_right_click = close_all
+
+[urgency_low]
+    background = "#16121C"
+    foreground = "#807a90"
+    frame_color = "#581C87"
+    timeout = 5
+
+[urgency_normal]
+    background = "#16121C"
+    foreground = "#E8E3F2"
+    frame_color = "#8A2BE2"
+    timeout = 8
+
+[urgency_critical]
+    background = "#16121C"
+    foreground = "#FFE5E5"
+    frame_color = "#DC2641"
+    timeout = 0

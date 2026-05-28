@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# devilsec-ip-display
+# Outputs the currently-pinned (or default) adapter + its IP for polybar.
+# Reads pinned interface from ~/.config/devilsec/pinned-iface
+
+set -uo pipefail
+
+PIN_FILE="$HOME/.config/devilsec/pinned-iface"
+mkdir -p "$(dirname "$PIN_FILE")"
+
+list_ifaces() {
+    # interfaces with an IPv4, excluding loopback, sorted by name
+    ip -4 -o addr show 2>/dev/null | \
+        awk '$2 !~ /^lo$/ {print $2}' | sort -u
+}
+
+ip_of() {
+    local iface="$1"
+    ip -4 -o addr show "$iface" 2>/dev/null | \
+        awk '{split($4, a, "/"); print a[1]; exit}'
+}
+
+# Determine which interface to show
+if [[ -f "$PIN_FILE" ]]; then
+    iface=$(cat "$PIN_FILE")
+    # Validate the pinned interface still exists and has an IP
+    if ! ip -4 -o addr show "$iface" 2>/dev/null | grep -q inet; then
+        # Pinned interface lost its IP — fall back to first available
+        iface=""
+    fi
+fi
+
+if [[ -z "${iface:-}" ]]; then
+    iface=$(list_ifaces | head -1)
+fi
+
+if [[ -z "$iface" ]]; then
+    # No interfaces with IP
+    printf '%%{F#DC2641}󰈂%%{F-} offline'
+    exit 0
+fi
+
+ip_addr=$(ip_of "$iface")
+
+# Pick a glyph based on interface type
+case "$iface" in
+    eth*|en*)  glyph="󰈁" ;;  # ethernet
+    wl*|wlp*)  glyph="󰖩" ;;  # wifi
+    tun*|tap*) glyph="󰢩" ;;  # tunnel/vpn
+    wg*)       glyph="󰒃" ;;  # wireguard
+    docker*)   glyph="󰡨" ;;  # docker
+    br-*)      glyph="󰛧" ;;  # bridge
+    *)         glyph="󰈀" ;;
+esac
+
+printf '%%{F#8A2BE2}%s%%{F-} %s %%{F#807a90}%s%%{F-}' "$glyph" "$iface" "$ip_addr"

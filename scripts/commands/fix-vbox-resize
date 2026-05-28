@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# DEVILSEC · VirtualBox guest fix
+# Installs VirtualBox guest packages so the display auto-resizes.
+
+set -uo pipefail
+
+if [[ -t 1 ]]; then
+    R=$'\033[0m'; B=$'\033[1m'; D=$'\033[2m'
+    OK=$'\033[38;2;127;176;105m'; INFO=$'\033[38;2;138;43;226m'; WARN=$'\033[38;2;212;175;55m'
+fi
+info() { printf "  ${INFO}i${R}  %s\n" "$*"; }
+ok()   { printf "  ${OK}✓${R}  %s\n" "$*"; }
+warn() { printf "  ${WARN}!${R}  %s\n" "$*"; }
+
+# Confirm we're in VBox before installing things
+if ! dmesg 2>/dev/null | grep -qi virtualbox && ! lspci 2>/dev/null | grep -qi virtualbox; then
+    warn "this doesn't look like a VirtualBox guest; nothing to do."
+    exit 0
+fi
+
+info "Installing VirtualBox guest packages..."
+sudo apt-get update -qq 2>/dev/null
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+    virtualbox-guest-x11 \
+    virtualbox-guest-utils \
+    virtualbox-guest-dkms 2>/dev/null || \
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+        virtualbox-guest-x11 virtualbox-guest-utils 2>/dev/null || true
+
+# Enable the auto-resize service
+sudo systemctl enable --now vboxservice 2>/dev/null || true
+
+# Start VBoxClient services for the current X session
+if [[ -n "${DISPLAY:-}" ]] && command -v VBoxClient >/dev/null 2>&1; then
+    VBoxClient --display 2>/dev/null &
+    VBoxClient --vmsvga 2>/dev/null &
+    VBoxClient --seamless 2>/dev/null &
+    VBoxClient --clipboard 2>/dev/null &
+    ok "VBoxClient services started for current session"
+fi
+
+# Make sure VBoxClient autostarts with X
+mkdir -p "$HOME/.config/autostart"
+cat > "$HOME/.config/autostart/vboxclient.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=VBoxClient
+Exec=sh -c "VBoxClient --display & VBoxClient --vmsvga & VBoxClient --clipboard &"
+X-GNOME-Autostart-enabled=true
+Hidden=false
+EOF
+ok "VBoxClient added to autostart"
+
+# Also append to bspwmrc so it starts in bspwm sessions too
+BSPWMRC="$HOME/.config/bspwm/bspwmrc"
+if [[ -f "$BSPWMRC" ]] && ! grep -q "VBoxClient" "$BSPWMRC"; then
+    cat >> "$BSPWMRC" <<'EOF'
+
+# Auto-resize the display in VirtualBox
+if pgrep -x VBoxService >/dev/null 2>&1 || lspci 2>/dev/null | grep -qi virtualbox; then
+    pgrep -f "VBoxClient --display" >/dev/null || VBoxClient --display 2>/dev/null &
+    pgrep -f "VBoxClient --vmsvga" >/dev/null || VBoxClient --vmsvga 2>/dev/null &
+    pgrep -f "VBoxClient --clipboard" >/dev/null || VBoxClient --clipboard 2>/dev/null &
+fi
+EOF
+    ok "bspwmrc: VBoxClient autostart added"
+fi
+
+cat <<EOF
+
+  ${B}${OK}VirtualBox auto-resize ready.${R}
+
+  ${B}Activate it:${R}
+    ${INFO}▸${R}  In the VirtualBox menu (top of VM window):
+       ${B}Ver → Modo Pantalla Completa${R}  (or just Ctrl+F)
+       ${B}Ver → Tamaño de Pantalla Automático del Cliente${R}  ← enable this
+
+    ${INFO}▸${R}  If the screen STILL has black bars after that:
+       - Log out and back in to bspwm (so VBoxClient picks up)
+       - Or reboot the VM once
+
+  ${D}If you're not using VBox, this script did nothing harmful.${R}
+
+EOF

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# nmcli-connect-device [ssid] [password]
+set -uo pipefail
+ssid="${1:-}"
+pass="${2:-}"
+if [[ -z "$ssid" ]]; then
+    nmcli device wifi list
+    read -r -p "SSID ▸ " ssid
+fi
+if [[ -z "$pass" ]]; then
+    read -rs -p "password (empty for open) ▸ " pass; echo
+fi
+if [[ -z "$pass" ]]; then
+    nmcli device wifi connect "$ssid"
+else
+    nmcli device wifi connect "$ssid" password "$pass"
+fi

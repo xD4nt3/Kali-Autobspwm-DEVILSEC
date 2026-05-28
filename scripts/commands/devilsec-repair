@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+# DEVILSEC · post-install repair
+# Catches the 3 packages that have slipped through the cracks:
+#   1. feh         — was in apt list but failed silently for some users
+#   2. fastfetch   — wasn't in any phase, must install now
+#   3. SecLists    — should live at /usr/share/seclists (standard path)
+#
+# Run AFTER install.sh on a fresh Kali install, or stand-alone if you only
+# want to repair these. Safe to run twice.
+
+set -uo pipefail
+
+if [[ -t 1 ]]; then
+    R=$'\033[0m'; B=$'\033[1m'; D=$'\033[2m'
+    OK=$'\033[38;2;127;176;105m'
+    WARN=$'\033[38;2;212;175;55m'
+    ERR=$'\033[38;2;220;38;65m'
+    INFO=$'\033[38;2;138;43;226m'
+fi
+info() { printf "  ${INFO}i${R}  %s\n" "$*"; }
+ok()   { printf "  ${OK}✓${R}  %s\n" "$*"; }
+warn() { printf "  ${WARN}!${R}  %s\n" "$*"; }
+err()  { printf "  ${ERR}✗${R}  %s\n" "$*" >&2; }
+step() { printf "\n${B}${INFO}━━ %s${R}\n" "$*"; }
+
+[[ $EUID -eq 0 ]] && { err "Run as your normal user (uses sudo internally)."; exit 1; }
+
+# ═══════════════════════════════════════════════════════════════════════════
+step "1 · Install missing system packages (feh, fastfetch)"
+# ═══════════════════════════════════════════════════════════════════════════
+missing=()
+command -v feh       >/dev/null 2>&1 || missing+=(feh)
+command -v fastfetch >/dev/null 2>&1 || missing+=(fastfetch)
+# also a few that commonly get skipped
+command -v xdotool   >/dev/null 2>&1 || missing+=(xdotool)
+command -v xprop     >/dev/null 2>&1 || missing+=(x11-utils)
+
+if (( ${#missing[@]} == 0 )); then
+    ok "feh + fastfetch already installed"
+else
+    info "Missing: ${missing[*]}"
+    sudo apt-get update -qq 2>/dev/null || true
+    if sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "${missing[@]}"; then
+        ok "Packages installed: ${missing[*]}"
+    else
+        err "apt install failed. Trying one by one..."
+        for p in "${missing[@]}"; do
+            if sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "$p" 2>/dev/null; then
+                ok "  ▸ $p"
+            else
+                err "  ✗ $p — manual install required"
+            fi
+        done
+    fi
+fi
+
+# Verify each is now on PATH
+for cmd in feh fastfetch; do
+    if command -v "$cmd" >/dev/null 2>&1; then
+        ok "$cmd: $(command -v "$cmd")"
+    else
+        err "$cmd still NOT available — please check your apt sources"
+    fi
+done
+
+# ═══════════════════════════════════════════════════════════════════════════
+step "2 · SecLists at the standard path (/usr/share/seclists)"
+# ═══════════════════════════════════════════════════════════════════════════
+STANDARD_PATH="/usr/share/seclists"
+LEGACY_PATH="/opt/devilsec/wordlists/SecLists"
+
+if [[ -d "$STANDARD_PATH" ]] && [[ "$(ls -A "$STANDARD_PATH" 2>/dev/null | wc -l)" -gt 5 ]]; then
+    ok "SecLists already at $STANDARD_PATH"
+else
+    # Prefer apt package if available (Kali ships seclists)
+    if apt-cache show seclists &>/dev/null; then
+        info "Installing seclists from Kali repos (~600 MB, takes a few minutes)..."
+        if sudo DEBIAN_FRONTEND=noninteractive apt-get install -y seclists; then
+            ok "SecLists installed to $STANDARD_PATH via apt"
+        else
+            warn "apt install seclists failed — falling back to git clone"
+            install_from_git=1
+        fi
+    else
+        install_from_git=1
+    fi
+
+    if [[ "${install_from_git:-0}" == "1" ]]; then
+        info "Cloning SecLists into $STANDARD_PATH (~600 MB)..."
+        sudo mkdir -p "$STANDARD_PATH"
+        sudo chown "$USER":"$USER" "$STANDARD_PATH"
+        git clone --depth=1 https://github.com/danielmiessler/SecLists.git "$STANDARD_PATH" \
+            && ok "SecLists cloned to $STANDARD_PATH" \
+            || err "git clone failed — check internet"
+    fi
+fi
+
+# If we have a leftover legacy copy, replace it with a symlink to the standard
+if [[ -d "$LEGACY_PATH" ]] && [[ ! -L "$LEGACY_PATH" ]] && [[ -d "$STANDARD_PATH" ]]; then
+    info "Replacing legacy $LEGACY_PATH with a symlink to $STANDARD_PATH"
+    sudo rm -rf "$LEGACY_PATH"
+    sudo ln -sf "$STANDARD_PATH" "$LEGACY_PATH"
+    ok "Symlink created"
+fi
+
+# Make sure /opt/devilsec/wordlists has a symlink too, for compatibility
+sudo mkdir -p /opt/devilsec/wordlists
+if [[ -d "$STANDARD_PATH" ]] && [[ ! -e /opt/devilsec/wordlists/SecLists ]]; then
+    sudo ln -sf "$STANDARD_PATH" /opt/devilsec/wordlists/SecLists
+    ok "Symlink: /opt/devilsec/wordlists/SecLists → $STANDARD_PATH"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════
+step "3 · Apply default wallpaper now (now that feh is in)"
+# ═══════════════════════════════════════════════════════════════════════════
+WALL="$HOME/.config/devilsec-wallpaper"
+if [[ -L "$WALL" ]] || [[ -f "$WALL" ]]; then
+    TARGET=$(readlink -f "$WALL" 2>/dev/null || echo "$WALL")
+    if [[ -f "$TARGET" ]] && command -v feh >/dev/null 2>&1 && [[ -n "${DISPLAY:-}" ]]; then
+        feh --no-fehbg --bg-fill "$TARGET" && ok "wallpaper applied: $(basename "$TARGET")"
+    fi
+fi
+
+cat <<EOF
+
+  ${B}${OK}Repair complete.${R}
+
+  ${B}Next:${R}
+    ${INFO}▸${R}  Run ${B}fastfetch${R} to see your greeter
+    ${INFO}▸${R}  Wallpaper should be set; if not, run ${B}styx -m wallpaper${R}
+    ${INFO}▸${R}  ${B}ls /usr/share/seclists${R} to verify SecLists is in place
+
+EOF

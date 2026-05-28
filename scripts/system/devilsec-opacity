@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+# DEVILSEC opacity controller · v1.1.2
+# Background-only transparency. Text/cursor stay solid.
+#
+# Per-app strategy:
+#   • kitty: background_opacity in kitty.conf + live via `kitty @`
+#   • rofi:  alpha embedded in the `bg-card` colour using argb() format
+#   • dunst: transparency property in dunstrc
+
+set -uo pipefail
+
+STATE="$HOME/.config/devilsec/opacity.state"
+DEFAULT_F=80
+DEFAULT_U=70
+MIN_OPACITY=30
+MAX_OPACITY=100
+
+KITTY_SOCKET="unix:@devilsec-kitty"
+ROFI_THEME="$HOME/.config/rofi/themes/devilsec.rasi"
+DUNST_CONF="$HOME/.config/dunst/dunstrc"
+
+notify() { command -v notify-send >/dev/null 2>&1 && notify-send -u low "DEVILSEC opacity" "$*" || true; }
+
+load_state() {
+    FOCUSED="$DEFAULT_F"; UNFOCUSED="$DEFAULT_U"
+    if [[ -f "$STATE" ]]; then
+        source "$STATE" 2>/dev/null || true
+    fi
+    [[ "${FOCUSED:-}" =~ ^[0-9]+$ ]] || FOCUSED="$DEFAULT_F"
+    [[ "${UNFOCUSED:-}" =~ ^[0-9]+$ ]] || UNFOCUSED="$DEFAULT_U"
+}
+
+save_state() {
+    mkdir -p "$(dirname "$STATE")"
+    printf 'FOCUSED=%s\nUNFOCUSED=%s\n' "$FOCUSED" "$UNFOCUSED" > "$STATE"
+}
+
+clamp_pct() {
+    local v="$1"
+    [[ "$v" =~ ^[0-9]+$ ]] || return 1
+    (( v < MIN_OPACITY )) && v=$MIN_OPACITY
+    (( v > MAX_OPACITY )) && v=$MAX_OPACITY
+    printf '%s\n' "$v"
+}
+
+# ─── Apply to kitty ─────────────────────────────────────────────────────────
+apply_kitty() {
+    local pct="$1"
+    local frac
+    frac=$(python3 -c "print(f'{int(${pct})/100:.2f}')")
+    local cfg="$HOME/.config/kitty/kitty.conf"
+    if [[ -f "$cfg" ]]; then
+        sed -i -E "s/^background_opacity\s+[0-9.]+/background_opacity ${frac}/" "$cfg"
+    fi
+    if command -v kitty >/dev/null 2>&1 && \
+       kitty @ --to "$KITTY_SOCKET" ls &>/dev/null; then
+        kitty @ --to "$KITTY_SOCKET" set-background-opacity "$frac" 2>/dev/null || true
+    fi
+}
+
+# ─── Apply to rofi (correct argb() method) ──────────────────────────────────
+# rofi DOES NOT support `background-alpha`. The way to do transparent
+# backgrounds is to declare colours with explicit alpha:
+#     bg-card: rgba(22, 18, 28, 0.80);
+# We update the bg-card alpha component in the theme file.
+apply_rofi() {
+    local pct="$1"
+    [[ -f "$ROFI_THEME" ]] || return 0
+
+    # Convert percentage (30-100) to decimal (0.30-1.00)
+    local frac
+    frac=$(python3 -c "print(f'{int(${pct})/100:.2f}')")
+
+    # First, CLEAN UP any broken stuff from previous versions of this script
+    python3 - "$ROFI_THEME" "$frac" <<'PY'
+import re, sys, pathlib
+
+path = pathlib.Path(sys.argv[1])
+frac = sys.argv[2]
+text = path.read_text()
+
+# 1. Remove any 'devilsec-bg-alpha' block I injected before (broken)
+text = re.sub(
+    r"\n*/\* devilsec-bg-alpha \*/.*?(?=\n\S|\Z)",
+    "",
+    text,
+    flags=re.S
+)
+# 2. Remove any stray 'background-alpha' rule that crept in
+text = re.sub(r"^\s*background-alpha:\s*[^;]+;\s*\n", "", text, flags=re.M)
+
+# 3. Inject (or update) a 'bg-card' colour with the chosen alpha.
+# Form: bg-card: rgba(22, 18, 28, 0.80);
+new_bg = f"    bg-card:      rgba(22, 18, 28, {frac});"
+
+# Replace the existing 'bg-card:' line if present
+if re.search(r"^\s*bg-card:\s*[^;]+;", text, re.M):
+    text = re.sub(r"^\s*bg-card:\s*[^;]+;", new_bg, text, count=1, flags=re.M)
+else:
+    # Append into the global * {} block
+    text = re.sub(r"(\*\s*\{)", r"\1\n" + new_bg, text, count=1)
+
+path.write_text(text)
+print(f"[ok] rofi bg-card alpha set to {frac}")
+PY
+}
+
+# ─── Apply to dunst ─────────────────────────────────────────────────────────
+apply_dunst() {
+    local pct="$1"
+    [[ -f "$DUNST_CONF" ]] || return 0
+    local trans=$(( 100 - pct ))
+    if grep -qE '^\s*transparency\s*=' "$DUNST_CONF"; then
+        sed -i -E "s/^(\s*transparency\s*=\s*).*/\1${trans}/" "$DUNST_CONF"
+    fi
+    pkill -USR2 -x dunst 2>/dev/null || true
+}
+
+apply_opacity() {
+    load_state
+    apply_kitty "$FOCUSED"
+    apply_rofi  "$FOCUSED"
+    apply_dunst "$FOCUSED"
+    printf '[ok] background opacity → %s%% (kitty + rofi + dunst)\n' "$FOCUSED"
+}
+
+reset_opacity() {
+    FOCUSED=100; UNFOCUSED=100
+    save_state
+    apply_opacity
+}
+
+run_daemon() {
+    apply_opacity >/dev/null 2>&1 || true
+    if command -v bspc >/dev/null 2>&1; then
+        bspc subscribe desktop_focus 2>/dev/null | while read -r _; do :; done
+    else
+        while :; do sleep 3600; done
+    fi
+}
+
+case "${1:-show}" in
+    show)
+        load_state
+        printf 'background opacity: focused=%s%% unfocused=%s%%\n' \
+            "$FOCUSED" "$UNFOCUSED"
+        ;;
+    apply)  apply_opacity ;;
+    reset)  reset_opacity ;;
+    daemon) run_daemon ;;
+    *)
+        if [[ "$1" =~ ^[0-9]+$ ]]; then
+            FOCUSED="$(clamp_pct "$1")" || exit 1
+            UNFOCUSED="$(clamp_pct "${2:-$FOCUSED}")" || exit 1
+            save_state
+            apply_opacity
+            notify "background=${FOCUSED}%"
+        else
+            cat <<HELP
+Usage:
+  devilsec-opacity show
+  devilsec-opacity <background-opacity%>   (clamped to ${MIN_OPACITY}-${MAX_OPACITY})
+  devilsec-opacity apply
+  devilsec-opacity reset
+  devilsec-opacity daemon
+HELP
+            exit 1
+        fi
+        ;;
+esac

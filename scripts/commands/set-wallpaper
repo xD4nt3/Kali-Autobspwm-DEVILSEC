@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+# set-wallpaper v2 — works with feh, xwallpaper, hsetroot, or nitrogen.
+# Picks whichever is installed. If none, tries to install feh.
+#
+# Usage:
+#   set-wallpaper                  → rofi picker (devilsec wallpapers)
+#   set-wallpaper <path>           → apply that file directly
+#   set-wallpaper --any            → rofi picker over $HOME (any image)
+set -uo pipefail
+
+WALL_DIR="$HOME/Pictures/devilsec-wallpapers"
+LINK="$HOME/.config/devilsec-wallpaper"
+STATE="$HOME/.config/devilsec/wallpaper.state"
+mkdir -p "$(dirname "$STATE")"
+
+# Find the wallpaper setter we have
+choose_setter() {
+    for cmd in feh xwallpaper hsetroot nitrogen; do
+        command -v "$cmd" >/dev/null 2>&1 && { echo "$cmd"; return 0; }
+    done
+    return 1
+}
+
+apply_wallpaper() {
+    local img="$1"
+    [[ -f "$img" ]] || { echo "no such file: $img" >&2; return 1; }
+
+    local setter
+    if ! setter=$(choose_setter); then
+        echo "no wallpaper setter installed. Install one with:" >&2
+        echo "  sudo apt install -y feh" >&2
+        return 1
+    fi
+
+    case "$setter" in
+        feh)
+            feh --no-fehbg --bg-fill "$img"
+            ;;
+        xwallpaper)
+            xwallpaper --zoom "$img"
+            ;;
+        hsetroot)
+            hsetroot -fill "$img"
+            ;;
+        nitrogen)
+            nitrogen --set-zoom-fill --save "$img"
+            ;;
+    esac
+
+    # Persist
+    local abs="$(readlink -f "$img")"
+    ln -sf "$abs" "$LINK"
+    echo "$abs" > "$STATE"
+    command -v notify-send >/dev/null 2>&1 && \
+        notify-send -u low "DEVILSEC" "wallpaper: $(basename "$img")" || true
+}
+
+# Direct path
+if [[ -n "${1:-}" && "$1" != "--any" ]]; then
+    apply_wallpaper "$1"
+    exit $?
+fi
+
+# rofi picker
+if [[ "${1:-}" == "--any" ]]; then
+    # Browse anywhere starting from HOME (read line-delimited paths)
+    if command -v rofi >/dev/null 2>&1; then
+        mapfile -t imgs < <(find "$HOME" -maxdepth 5 -type f \
+            \( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.webp" \) \
+            -not -path '*/.*' 2>/dev/null | sort)
+    fi
+else
+    # Devilsec wallpapers only
+    if [[ -d "$WALL_DIR" ]]; then
+        mapfile -t imgs < <(find "$WALL_DIR" -type f \
+            \( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.webp" \) | sort)
+    fi
+fi
+
+imgs=("${imgs[@]:-}")
+if (( ${#imgs[@]} == 0 )); then
+    echo "no images found" >&2
+    exit 1
+fi
+
+if command -v rofi >/dev/null 2>&1 && [[ -n "${DISPLAY:-}" ]]; then
+    # Show basename, but pass full path
+    declare -A by_name
+    listing=""
+    for w in "${imgs[@]}"; do
+        # If two files have the same basename, disambiguate with parent dir
+        name="$(basename "$w")"
+        if [[ -n "${by_name[$name]:-}" ]]; then
+            name="$(basename "$(dirname "$w")")/$name"
+        fi
+        by_name["$name"]="$w"
+        listing+="$name"$'\n'
+    done
+
+    pick=$(printf '%s' "$listing" | rofi -dmenu -i -p "wallpaper" \
+        -theme "$HOME/.config/rofi/themes/devilsec.rasi" 2>/dev/null)
+    [[ -n "$pick" ]] && apply_wallpaper "${by_name[$pick]}"
+else
+    # TTY fallback
+    select w in "${imgs[@]}"; do
+        [[ -n "$w" ]] && apply_wallpaper "$w" && break
+    done
+fi

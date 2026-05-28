@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+# ─── DEVILSEC · bspwm ─────────────────────────────────────────────────────────
+
+# Process orchestrator: kill stale daemons & relaunch fresh each load.
+pgrep -x sxhkd >/dev/null && pkill -x sxhkd
+pgrep -x picom >/dev/null && pkill -x picom
+pgrep -x dunst >/dev/null && pkill -x dunst
+pgrep -x polybar >/dev/null && pkill -x polybar
+
+sxhkd &
+dunst -config "$HOME/.config/dunst/dunstrc" &
+picom --config "$HOME/.config/picom/picom.conf" --daemon
+nm-applet --indicator &
+blueman-applet &
+lxpolkit &
+
+# DEVILSEC picom watchdog — restarts picom if it crashes
+pgrep -f "devilsec-picom-watchdog" >/dev/null || \
+    (devilsec-picom-watchdog &>/dev/null &)
+
+# DEVILSEC opacity daemon — reapplies _NET_WM_WINDOW_OPACITY on focus changes
+# This is what makes transparency stable in VirtualBox.
+pgrep -f "devilsec-opacity daemon" >/dev/null || \
+    (devilsec-opacity daemon &>/tmp/devilsec-opacity.log &)
+
+# Wallpaper — respect the styx-managed symlink, fall back to a default.
+sleep 0.2
+if [[ -L "$HOME/.config/devilsec-wallpaper" && -e "$HOME/.config/devilsec-wallpaper" ]]; then
+    feh --no-fehbg --bg-fill "$HOME/.config/devilsec-wallpaper"
+elif [[ -d "$HOME/Pictures/devilsec-wallpapers" ]]; then
+    first=$(find "$HOME/Pictures/devilsec-wallpapers" -type f \( -iname "*.png" -o -iname "*.jpg" \) | head -1)
+    [[ -n "$first" ]] && feh --no-fehbg --bg-fill "$first"
+fi
+
+# ─── Workspaces ───────────────────────────────────────────────────────────────
+# We use 9 minimal-label workspaces; sxhkd binds Super+1..9 to them.
+NUM_MON=$(bspc query -M | wc -l)
+if [[ $NUM_MON -eq 1 ]]; then
+    bspc monitor -d "" "" "" "" "" "" "" "" ""
+else
+    primary=$(bspc query -M --names | head -1)
+    secondary=$(bspc query -M --names | sed -n 2p)
+    bspc monitor "$primary"   -d "" "" "" "" ""
+    bspc monitor "$secondary" -d "" "" "" ""
+fi
+
+# ─── Window layout ────────────────────────────────────────────────────────────
+bspc config border_width                0
+bspc config window_gap                  12
+bspc config top_padding                 38   # polybar height + small breathing room
+bspc config bottom_padding              0
+bspc config left_padding                4
+bspc config right_padding               4
+
+bspc config split_ratio                 0.50
+bspc config single_monocle              false
+bspc config borderless_monocle          true
+bspc config gapless_monocle             true
+bspc config focus_follows_pointer       true
+bspc config pointer_follows_focus       false
+bspc config click_to_focus              any
+bspc config focus_on_open               true
+bspc config remove_disabled_monitors    true
+bspc config remove_unplugged_monitors   true
+bspc config merge_overlapping_monitors  true
+
+# ─── Colours (DEVILSEC palette — overridable by styx) ─────────────────────────
+bspc config normal_border_color         "#16121C"
+bspc config active_border_color         "#581C87"
+bspc config focused_border_color        "#8A2BE2"
+bspc config presel_feedback_color       "#DC2641"
+
+# ─── Rules: floating helpers, scratchpads, etc. ───────────────────────────────
+bspc rule -a Pavucontrol     state=floating center=on
+bspc rule -a Blueman-manager state=floating center=on
+bspc rule -a Lxappearance    state=floating center=on
+bspc rule -a Nitrogen        state=floating center=on
+bspc rule -a Thunar          state=floating
+bspc rule -a Org.gnome.Nautilus state=floating
+bspc rule -a Galculator      state=floating center=on
+bspc rule -a Yad             state=floating center=on
+bspc rule -a Burp-StartBurp  desktop="^4"
+bspc rule -a Burp-Suite      desktop="^4"
+bspc rule -a Wireshark       desktop="^5"
+bspc rule -a Firefox-esr     desktop="^2"
+bspc rule -a firefox         desktop="^2"
+
+# ─── Launch polybar ──────────────────────────────────────────────────────────
+"$HOME/.config/polybar/launch.sh" &
+
+# ─── Notify environment is up (subtle) ───────────────────────────────────────
+( sleep 1 && notify-send -u low -t 2000 "DEVILSEC" "session active · press Super+Alt+S for styx" ) &

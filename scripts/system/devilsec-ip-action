@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# devilsec-ip-action v2
+# CRITICAL FIX: removed `pkill -RTMIN+1 polybar` which was killing the bar
+# because the hook wasn't subscribed. polybar will auto-refresh the script
+# every 1 second instead (set in the module's `interval`).
+
+set -uo pipefail
+
+PIN_FILE="$HOME/.config/devilsec/pinned-iface"
+mkdir -p "$(dirname "$PIN_FILE")"
+
+ip_of() {
+    ip -4 -o addr show "$1" 2>/dev/null | \
+        awk '{split($4, a, "/"); print a[1]; exit}'
+}
+
+list_ifaces() {
+    ip -4 -o addr show 2>/dev/null | \
+        awk '$2 !~ /^lo$/ {print $2}' | sort -u
+}
+
+current_iface() {
+    if [[ -f "$PIN_FILE" ]]; then
+        local p; p=$(cat "$PIN_FILE")
+        ip -4 -o addr show "$p" 2>/dev/null | grep -q inet && { echo "$p"; return; }
+    fi
+    list_ifaces | head -1
+}
+
+cycle() {
+    local direction="$1"
+    mapfile -t ifaces < <(list_ifaces)
+    local n=${#ifaces[@]}
+    (( n == 0 )) && return 0
+    local cur; cur=$(current_iface)
+    local idx=0
+    for i in "${!ifaces[@]}"; do
+        [[ "${ifaces[$i]}" == "$cur" ]] && idx=$i && break
+    done
+    if [[ "$direction" == "+1" ]]; then
+        idx=$(( (idx + 1) % n ))
+    else
+        idx=$(( (idx - 1 + n) % n ))
+    fi
+    echo "${ifaces[$idx]}" > "$PIN_FILE"
+    # NO pkill polybar — interval=1 in the module config refreshes for us
+}
+
+case "${1:-}" in
+    scroll-up|next)    cycle +1 ;;
+    scroll-down|prev)  cycle -1 ;;
+    copy)
+        ip=$(ip_of "$(current_iface)")
+        if [[ -n "$ip" ]]; then
+            if command -v xclip >/dev/null 2>&1; then
+                printf '%s' "$ip" | xclip -selection clipboard
+            elif command -v xsel >/dev/null 2>&1; then
+                printf '%s' "$ip" | xsel --clipboard
+            fi
+            command -v notify-send >/dev/null 2>&1 && \
+                notify-send -u low "IP copied" "$(current_iface) → $ip"
+        fi
+        ;;
+    click|menu)
+        lines=""
+        while IFS= read -r iface; do
+            ip=$(ip_of "$iface")
+            [[ -n "$ip" ]] || continue
+            lines+="${iface}  ·  ${ip}"$'\n'
+        done < <(list_ifaces)
+
+        if [[ -f "$PIN_FILE" ]]; then
+            lines+="  ──  clear pin (auto-pick)"$'\n'
+        fi
+        lines+="  ──  copy current IP"
+
+        theme="$HOME/.config/rofi/themes/devilsec.rasi"
+        [[ -f "$theme" ]] || theme=""
+
+        pick=$(printf '%s' "$lines" | \
+            rofi -dmenu -i -p "iface" \
+                 ${theme:+-theme "$theme"} \
+                 -no-custom 2>/dev/null) || exit 0
+
+        [[ -z "$pick" ]] && exit 0
+
+        case "$pick" in
+            *"clear pin"*)
+                rm -f "$PIN_FILE"
+                ;;
+            *"copy current"*)
+                "$0" copy
+                ;;
+            *"  ·  "*)
+                iface="${pick%%  ·  *}"
+                echo "$iface" > "$PIN_FILE"
+                command -v notify-send >/dev/null 2>&1 && \
+                    notify-send -u low "DEVILSEC" "Pinned: $iface"
+                ;;
+        esac
+        ;;
+    *)
+        echo "usage: devilsec-ip-action {scroll-up|scroll-down|click|copy}" >&2
+        exit 1
+        ;;
+esac

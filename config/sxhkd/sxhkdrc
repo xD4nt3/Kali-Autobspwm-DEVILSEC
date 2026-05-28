@@ -1,0 +1,229 @@
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║  DEVILSEC · sxhkd · v1.1.0 (definitive)                                  ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+
+# CORE
+super + Return
+    kitty
+
+super + shift + Return
+    kitty --class=kitty-float
+
+super + d
+    rofi -show drun -theme ~/.config/rofi/themes/devilsec.rasi
+
+super + shift + d
+    rofi -show drun -theme ~/.config/rofi/themes/devilsec.rasi
+
+super + Tab
+    rofi -show window -theme ~/.config/rofi/themes/devilsec.rasi
+
+super + r
+    rofi -show run -theme ~/.config/rofi/themes/devilsec.rasi
+
+super + shift + p
+    ~/.config/polybar/scripts/powermenu.sh
+
+super + shift + s
+    styx -m scope
+
+super + Escape
+    pkill -USR1 -x sxhkd ; notify-send -u low "DEVILSEC" "sxhkd reloaded"
+
+super + shift + r
+    bspc wm -r ; notify-send -u low "DEVILSEC" "bspwm reloaded"
+
+super + shift + q
+    bspc quit
+
+super + ctrl + l
+    betterlockscreen -l 2>/dev/null || i3lock -c 0a0810
+
+# DEVILSEC
+super + alt + s
+    styx -g
+
+super + alt + k
+    devilsec-keyboard
+
+# KITTY TABS
+super + alt + t
+    devilsec-kitty-do new_tab
+
+super + alt + w
+    devilsec-kitty-do close_tab
+
+super + alt + l
+    devilsec-kitty-do next_tab
+
+super + alt + h
+    devilsec-kitty-do previous_tab
+
+super + alt + n
+    devilsec-kitty-do rename_tab
+
+super + alt + shift + l
+    devilsec-kitty-do move_tab_forward
+
+super + alt + shift + h
+    devilsec-kitty-do move_tab_backward
+
+# IP HELPERS
+super + shift + F1
+    devilsec-copy-ip local
+
+super + shift + F2
+    devilsec-copy-ip vpn
+
+super + shift + F3
+    devilsec-copy-ip target
+
+# BRIGHTNESS / VOLUME / TEMPERATURE
+XF86MonBrightnessDown
+    brightnessctl set 5%- 2>/dev/null
+XF86MonBrightnessUp
+    brightnessctl set +5% 2>/dev/null
+
+super + F2
+    brightnessctl set 5%-
+super + F3
+    brightnessctl set +5%
+
+super + F5
+    pactl set-sink-mute @DEFAULT_SINK@ toggle
+super + F6
+    pactl set-sink-volume @DEFAULT_SINK@ -5%
+super + F7
+    pactl set-sink-volume @DEFAULT_SINK@ +5%
+
+XF86AudioMute
+    pactl set-sink-mute @DEFAULT_SINK@ toggle
+XF86AudioRaiseVolume
+    pactl set-sink-volume @DEFAULT_SINK@ +5%
+XF86AudioLowerVolume
+    pactl set-sink-volume @DEFAULT_SINK@ -5%
+
+super + F8
+    devilsec-temp toggle
+super + F9
+    devilsec-temp down
+super + F10
+    devilsec-temp up
+
+# WINDOW MANAGEMENT
+super + w
+    bspc node -c
+
+super + shift + w
+    bspc node -k
+
+super + s
+    bspc node -t \~floating
+
+super + m
+    bspc desktop -l next
+
+super + f
+    bspc node -t \~fullscreen
+
+super + t
+    bspc node -t tiled
+
+super + shift + b
+    bspc node @/ -B
+
+# PRESELECTORS (Super+Shift+Arrow)
+super + shift + {Left,Down,Up,Right}
+    bspc node -p {west,south,north,east}
+
+super + shift + space
+    bspc node -p cancel
+
+# FOCUS
+super + {Left,Down,Up,Right}
+    bspc node -f {west,south,north,east}
+
+# RESIZE — Super+Alt+arrow
+# Each arrow moves the corresponding edge OUTWARDS by 20px.
+# Pressing the opposite arrow contracts that edge (intuitive "stretch" feel).
+super + alt + Left
+    bspc node -z left -20 0 || bspc node -z right -20 0
+super + alt + Right
+    bspc node -z right 20 0 || bspc node -z left 20 0
+super + alt + Up
+    bspc node -z top 0 -20 || bspc node -z bottom 0 -20
+super + alt + Down
+    bspc node -z bottom 0 20 || bspc node -z top 0 20
+
+# SHRINK — Super+Alt+Shift+arrow (the inverse)
+super + alt + shift + Left
+    bspc node -z right -20 0 || bspc node -z left 20 0
+super + alt + shift + Right
+    bspc node -z left 20 0 || bspc node -z right -20 0
+super + alt + shift + Up
+    bspc node -z bottom 0 -20 || bspc node -z top 0 20
+super + alt + shift + Down
+    bspc node -z top 0 20 || bspc node -z bottom 0 -20
+
+# MOVE FLOATING WITH CTRL
+super + ctrl + {Left,Down,Up,Right}
+    bspc node -v {-20 0,0 20,0 -20,20 0}
+
+# MOUSE
+super + button{1-3}
+    bspc node {select,move,resize-corner}
+
+# WORKSPACES
+super + {1-9}
+    bspc desktop -f '^{1-9}'
+super + 0
+    bspc desktop -f '^10'
+
+super + shift + {1-9}
+    bspc node -d '^{1-9}'
+super + shift + 0
+    bspc node -d '^10'
+
+super + ctrl + {1-9}
+    bspc node -d '^{1-9}' --follow
+super + ctrl + 0
+    bspc node -d '^10' --follow
+
+# SCREENSHOTS
+Print
+    flameshot gui
+
+super + Print
+    flameshot full -p ~/Pictures
+
+shift + Print
+    flameshot screen -p ~/Pictures
+
+# APPLICATIONS
+super + shift + f
+    firefox
+
+super + shift + b
+    burpsuite
+
+super + shift + v
+    code
+
+super + shift + g
+    thunar
+
+super + shift + e
+    wireshark
+
+super + shift + a
+    postman 2>/dev/null || flatpak run com.getpostman.Postman 2>/dev/null \
+        || notify-send "DEVILSEC" "Postman not installed"
+
+super + shift + o
+    obsidian 2>/dev/null || flatpak run md.obsidian.Obsidian 2>/dev/null \
+        || notify-send "DEVILSEC" "Obsidian not installed"
+
+# MEDIA
+XF86Audio{Play,Stop,Prev,Next}
+    playerctl {play-pause,stop,previous,next}
+

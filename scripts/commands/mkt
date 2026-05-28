@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# mkt <name> → create a CTF-style folder with standard sub-dirs and cd into it
+set -uo pipefail
+name="${1:?usage: mkt <name>}"
+mkdir -p "$name"/{nmap,content,exploits,scripts,loot,screenshots}
+echo "Created: $name/{nmap,content,exploits,scripts,loot,screenshots}"
+echo "To enter: cd $name"
