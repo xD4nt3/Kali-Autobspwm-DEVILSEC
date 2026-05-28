@@ -1,6 +1,6 @@
 <div align="center">
 
-# DEVILSEC Environment
+# DEVILSEC Environment v1.0
 
 <img src="docs/devilsec-preview.png" width="850" alt="DEVILSEC Kali bspwm environment preview">
 
